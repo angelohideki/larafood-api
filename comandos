@@ -3,3 +3,13 @@ php artisan make:controller Api\\TenantApiController
 php artisan make:resource TenantResource
 
 php artisan make:provider RepositoryServiceProvider
+
+php artisan make:controller Api\\CategoryApiController
+
+php artisan make:resource CategoryResource
+
+php artisan make:request Api\\TenantFormRequest
+
+php artisan make:controller Api\\TableApiController
+
+php artisan make:resource TableResource

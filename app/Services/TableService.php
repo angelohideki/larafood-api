@@ -24,8 +24,8 @@ class TableService
         return $this->table->getTablesByTenantId($tenant->id);
     }
 
-    public function getTableByUuid(string $uuid)
+    public function getTableByIdentify(string $identify)
     {
-        return $this->table->getTableByUuid($uuid);
+        return $this->table->getTableByIdentify($identify);
     }
 }
