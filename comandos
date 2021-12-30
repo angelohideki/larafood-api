@@ -13,3 +13,7 @@ php artisan make:request Api\\TenantFormRequest
 php artisan make:controller Api\\TableApiController
 
 php artisan make:resource TableResource
+
+php artisan make:controller Api\\ProductApiController
+
+php artisan make:resource ProductResource
