@@ -9,7 +9,7 @@ class Product extends Model
 {
     use TenantTrait;
     
-    protected $fillable = ['title', 'flag', 'price', 'description', 'image'];
+    protected $fillable = ['title', 'flag', 'price', 'description', 'image', 'tenant_id'];
 
     public function categories()
     {
