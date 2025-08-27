@@ -318,9 +318,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!passwordField.value.trim()) {
             showFieldError(passwordField, 'O campo senha é obrigatório.');
             isValid = false;
-        } else if (passwordField.value.length < 6) {
-            showFieldError(passwordField, 'A senha deve ter pelo menos 6 caracteres.');
-            isValid = false;
         }
         
         return isValid;
