@@ -28,7 +28,7 @@ class TenantObserver
      */
     public function updating(Tenant $tenant)
     {
-        $this->url = Str::slug($tenant->name);
+        $tenant->url = Str::slug($tenant->name);
     }
 
 }

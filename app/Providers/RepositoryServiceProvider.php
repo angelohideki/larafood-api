@@ -14,6 +14,12 @@ use App\Repositories\{
     TableRepository,
     TenantRepository,
 };
+use App\Services\Contracts\FileServiceInterface;
+use App\Services\FileService;
+use App\Services\Contracts\CategoryServiceInterface;
+use App\Services\CategoryService;
+use App\Services\Contracts\ProductServiceInterface;
+use App\Services\ProductService;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -46,6 +52,24 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(//bind para que quando injetar a classe ProductRepositoryInterface vai criar um objeto ProductRepository
             ProductRepositoryInterface::class,
             ProductRepository::class,
+
+        );
+
+        $this->app->bind(//bind para que quando injetar a classe FileServiceInterface vai criar um objeto FileService
+            FileServiceInterface::class,
+            FileService::class,
+
+        );
+
+        $this->app->bind(//bind para que quando injetar a classe CategoryServiceInterface vai criar um objeto CategoryService
+            CategoryServiceInterface::class,
+            CategoryService::class,
+
+        );
+
+        $this->app->bind(//bind para que quando injetar a classe ProductServiceInterface vai criar um objeto ProductService
+            ProductServiceInterface::class,
+            ProductService::class,
 
         );
     }

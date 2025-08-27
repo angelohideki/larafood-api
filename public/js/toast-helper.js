@@ -1,147 +1,179 @@
-// Toast Helper Functions
-const Toast = {
-    // Configuração padrão do toast
-    config: {
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 4000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
-    },
+/**
+ * Enhanced Toast Helper for LaraFood Admin
+ * Provides beautiful, non-intrusive notifications
+ */
 
-    // Toast de sucesso
-    success: function(message, title = 'Sucesso!') {
-        Swal.fire({
-            ...this.config,
-            icon: 'success',
-            title: title,
-            text: message
-        });
-    },
-
-    // Toast de erro
-    error: function(message, title = 'Erro!') {
-        Swal.fire({
-            ...this.config,
-            icon: 'error',
-            title: title,
-            text: message,
-            timer: 6000 // Erros ficam mais tempo
-        });
-    },
-
-    // Toast de aviso
-    warning: function(message, title = 'Atenção!') {
-        Swal.fire({
-            ...this.config,
-            icon: 'warning',
-            title: title,
-            text: message
-        });
-    },
-
-    // Toast de informação
-    info: function(message, title = 'Informação') {
-        Swal.fire({
-            ...this.config,
-            icon: 'info',
-            title: title,
-            text: message
-        });
-    },
-
-    // Toast customizado
-    custom: function(options) {
-        Swal.fire({
-            ...this.config,
-            ...options
-        });
-    },
-
-    // Função para exibir múltiplos erros de validação
-    validationErrors: function(errors) {
-        let errorList = '';
-        if (Array.isArray(errors)) {
-            errorList = errors.map(error => `• ${error}`).join('<br>');
-        } else if (typeof errors === 'object') {
-            errorList = Object.values(errors).flat().map(error => `• ${error}`).join('<br>');
-        } else {
-            errorList = errors;
-        }
-
-        Swal.fire({
-            ...this.config,
-            icon: 'error',
-            title: 'Erro!',
-            html: errorList,
-            timer: 8000
-        });
+class ToastHelper {
+    constructor() {
+        this.init();
     }
-};
 
-// Função para processar mensagens do Laravel (sessão)
-function processLaravelMessages() {
-    // Verifica se há mensagens na sessão (passadas pelo Laravel)
-    if (typeof laravelMessages !== 'undefined') {
-        // Cria chaves baseadas no conteúdo das mensagens para evitar duplicatas
-        if (laravelMessages.success) {
-            const successKey = 'toast_success_' + btoa(laravelMessages.success).replace(/[^a-zA-Z0-9]/g, '');
-            if (!sessionStorage.getItem(successKey)) {
-                Toast.success(laravelMessages.success);
-                sessionStorage.setItem(successKey, Date.now());
+    init() {
+        // Create toast container if it doesn't exist
+        if (!document.querySelector('.toast-container')) {
+            const container = document.createElement('div');
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+        }
+
+        // Process Laravel messages on page load
+        this.processLaravelMessages();
+    }
+
+    processLaravelMessages() {
+        if (typeof window.laravelMessages !== 'undefined') {
+            const messages = window.laravelMessages;
+            
+            if (messages.success) {
+                this.success(messages.success);
+            }
+            
+            if (messages.error) {
+                this.error(messages.error);
+            }
+            
+            if (messages.info) {
+                this.info(messages.info);
+            }
+            
+            if (messages.errors && Array.isArray(messages.errors)) {
+                messages.errors.forEach(error => {
+                    this.error(error);
+                });
             }
         }
-        if (laravelMessages.error) {
-            const errorKey = 'toast_error_' + btoa(laravelMessages.error).replace(/[^a-zA-Z0-9]/g, '');
-            if (!sessionStorage.getItem(errorKey)) {
-                Toast.error(laravelMessages.error);
-                sessionStorage.setItem(errorKey, Date.now());
-            }
-        }
-        if (laravelMessages.warning || laravelMessages.info) {
-            const message = laravelMessages.warning || laravelMessages.info;
-            const warningKey = 'toast_warning_' + btoa(message).replace(/[^a-zA-Z0-9]/g, '');
-            if (!sessionStorage.getItem(warningKey)) {
-                Toast.warning(message);
-                sessionStorage.setItem(warningKey, Date.now());
-            }
-        }
-        if (laravelMessages.errors) {
-            const errorsKey = 'toast_errors_' + btoa(JSON.stringify(laravelMessages.errors)).replace(/[^a-zA-Z0-9]/g, '');
-            if (!sessionStorage.getItem(errorsKey)) {
-                Toast.validationErrors(laravelMessages.errors);
-                sessionStorage.setItem(errorsKey, Date.now());
-            }
-        }
+    }
+
+    show(message, type = 'info', duration = 5000) {
+        const container = document.querySelector('.toast-container');
+        const toastId = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         
-        // Limpa mensagens antigas do sessionStorage (mais de 1 hora)
-        cleanOldMessages();
-    }
-}
+        const icons = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-exclamation-circle',
+            warning: 'fas fa-exclamation-triangle',
+            info: 'fas fa-info-circle'
+        };
 
-// Função para limpar mensagens antigas do sessionStorage
-function cleanOldMessages() {
-    const oneHourAgo = Date.now() - (60 * 60 * 1000);
-    
-    for (let i = sessionStorage.length - 1; i >= 0; i--) {
-        const key = sessionStorage.key(i);
-        if (key && key.startsWith('toast_')) {
-            const timestamp = parseInt(sessionStorage.getItem(key));
-            if (timestamp && timestamp < oneHourAgo) {
-                sessionStorage.removeItem(key);
-            }
+        const colors = {
+            success: 'text-success',
+            error: 'text-danger',
+            warning: 'text-warning',
+            info: 'text-info'
+        };
+
+        const toast = document.createElement('div');
+        toast.id = toastId;
+        toast.className = 'toast fade show';
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        
+        toast.innerHTML = `
+            <div class="toast-header bg-dark text-white border-0">
+                <i class="${icons[type]} ${colors[type]} me-2"></i>
+                <strong class="me-auto">${this.getTypeLabel(type)}</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body bg-dark text-white">
+                ${message}
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        // Auto remove after duration
+        setTimeout(() => {
+            this.remove(toastId);
+        }, duration);
+
+        // Add click to remove functionality
+        toast.querySelector('.btn-close').addEventListener('click', () => {
+            this.remove(toastId);
+        });
+
+        return toastId;
+    }
+
+    success(message, duration = 5000) {
+        return this.show(message, 'success', duration);
+    }
+
+    error(message, duration = 7000) {
+        return this.show(message, 'error', duration);
+    }
+
+    warning(message, duration = 6000) {
+        return this.show(message, 'warning', duration);
+    }
+
+    info(message, duration = 5000) {
+        return this.show(message, 'info', duration);
+    }
+
+    remove(toastId) {
+        const toast = document.getElementById(toastId);
+        if (toast) {
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }
+    }
+
+    getTypeLabel(type) {
+        const labels = {
+            success: 'Sucesso',
+            error: 'Erro',
+            warning: 'Atenção',
+            info: 'Informação'
+        };
+        return labels[type] || 'Notificação';
+    }
+
+    // Form validation helpers
+    showValidationErrors(errors) {
+        if (typeof errors === 'object') {
+            Object.keys(errors).forEach(field => {
+                if (Array.isArray(errors[field])) {
+                    errors[field].forEach(error => {
+                        this.error(error);
+                    });
+                } else {
+                    this.error(errors[field]);
+                }
+            });
+        }
+    }
+
+    // Loading state helpers
+    setButtonLoading(buttonSelector, loadingText = 'Carregando...') {
+        const button = document.querySelector(buttonSelector);
+        if (button) {
+            button.disabled = true;
+            button.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>${loadingText}`;
+        }
+    }
+
+    resetButton(buttonSelector, originalText, originalIcon = '') {
+        const button = document.querySelector(buttonSelector);
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = originalIcon ? `<i class="${originalIcon} me-2"></i>${originalText}` : originalText;
         }
     }
 }
 
-// Executa quando o documento estiver pronto
+// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
-    processLaravelMessages();
+    window.toastHelper = new ToastHelper();
 });
 
-// Torna o Toast disponível globalmente
-window.Toast = Toast;
+// Export for use in other scripts
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ToastHelper;
+}
